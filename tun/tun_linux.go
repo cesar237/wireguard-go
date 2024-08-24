@@ -579,7 +579,7 @@ func CreateTUN(name string, mtu int) (Device, error) {
 		return nil, err
 	}
 
-	ifr_attach_queue.SetUint16(unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE | unix.IFF_ATTACH_QUEUE | unix.IFF_NAPI)
+	ifr_attach_queue.SetUint16(unix.IFF_ATTACH_QUEUE | unix.IFF_NAPI)
 	for counter := 0; counter < runtime.NumCPU(); counter++ {
 		err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr_attach_queue)
 		if err != nil {
