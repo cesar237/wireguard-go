@@ -507,8 +507,8 @@ const (
 	// TODO: support TSO with ECN bits
 	tunTCPOffloads = unix.TUN_F_CSUM | unix.TUN_F_TSO4 | unix.TUN_F_TSO6
 	tunUDPOffloads = unix.TUN_F_USO4 | unix.TUN_F_USO6
-	tunIFFlags = unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR
-	tunIFMultiqueue = unix.IFF_MULTI_QUEUE | unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE
+	tunIFFlags = unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE
+	tunIFMultiqueue = unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE
 )
 
 
@@ -543,11 +543,10 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			// error if they are unsupported at runtime.
 			tun.udpGSO = unix.IoctlSetInt(int(fd), unix.TUNSETOFFLOAD, tunTCPOffloads|tunUDPOffloads) == nil
 		
-			ifr.SetUint16(tunIFMultiqueue)
-			err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, tunIFMultiqueue)
+			err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, unix.TUN_ATTACH_QUEUE | unix.TUN_NAPI)
 			if err != nil {
 				fmt.Printf("ioctl(TUNSETQUEUE, TUN_ATTACH_QUEUE | TUN_NAPI)\n")
-				return 
+				return
 			}
 
 		} else {
