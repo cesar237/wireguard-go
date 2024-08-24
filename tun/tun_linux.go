@@ -578,6 +578,13 @@ func CreateTUN(name string, mtu int) (Device, error) {
 		return nil, err
 	}
 
+	ifr.SetUint16(tunIFFlags | tunIFMultiqueue)
+	err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr)
+	if err != nil {
+		fmt.Printf("The problem is Here... (NumCPU=%d)\n", runtime.NumCPU())
+		return nil, err
+	}
+
 	// ifr.SetUint16(unix.IFF_ATTACH_QUEUE)
 	// for counter := 0; counter < runtime.NumCPU(); counter++ {
 	// 	err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr)
