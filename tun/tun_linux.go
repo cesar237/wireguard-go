@@ -543,7 +543,13 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			// error if they are unsupported at runtime.
 			tun.udpGSO = unix.IoctlSetInt(int(fd), unix.TUNSETOFFLOAD, tunTCPOffloads|tunUDPOffloads) == nil
 		
-			
+			ifr.SetUint16(tunIFMultiqueue)
+			err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, tunIFMultiqueue)
+			if err != nil {
+				fmt.Printf("ioctl(TUNSETQUEUE, TUN_ATTACH_QUEUE | TUN_NAPI)\n")
+				return 
+			}
+
 		} else {
 			tun.batchSize = 1
 		}
@@ -577,22 +583,6 @@ func CreateTUN(name string, mtu int) (Device, error) {
 		fmt.Printf("The problem is Here... (NumCPU=%d)\n", runtime.NumCPU())
 		return nil, err
 	}
-
-	ifr.SetUint16(tunIFFlags | tunIFMultiqueue)
-	err = unix.IoctlSetInt(nfd, unix.TUNSETQUEUE, tunIFMultiqueue)
-	if err != nil {
-		fmt.Printf("unix.IoctlSetInt(TUNSETQUEUE, tunIFMultiqueue) (NumCPU=%d)\n", runtime.NumCPU())
-		return nil, err
-	}
-
-	// ifr.SetUint16(unix.IFF_ATTACH_QUEUE)
-	// for counter := 0; counter < runtime.NumCPU(); counter++ {
-	// 	err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr)
-	// 	if err != nil {
-	// 		fmt.Printf("The problem is Here...\n")
-	// 		return nil, err
-	// 	}
-	// }
 
 	err = unix.SetNonblock(nfd, true)
 	if err != nil {
