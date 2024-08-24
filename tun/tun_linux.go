@@ -573,7 +573,7 @@ func CreateTUN(name string, mtu int) (Device, error) {
 	}
 	// IFF_VNET_HDR enables the "tun status hack" via routineHackListener()
 	// where a null write will return EINVAL indicating the TUN is up.
-	ifr.SetUint16(unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE | unix.IFF_NAPI | unix.IFF_NAPI_FRAGS)
+	ifr.SetUint16(unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE | unix.IFF_NAPI)
 	err = unix.IoctlIfreq(nfd, unix.TUNSETIFF, ifr)
 	if err != nil {
 		return nil, err
@@ -583,6 +583,7 @@ func CreateTUN(name string, mtu int) (Device, error) {
 	for counter := 0; counter < runtime.NumCPU(); counter++ {
 		err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr_attach_queue)
 		if err != nil {
+			fmt.Printf("The problem is Here...\n")
 			return nil, err
 		}
 	}
