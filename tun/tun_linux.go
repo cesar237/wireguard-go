@@ -508,7 +508,7 @@ const (
 	tunTCPOffloads = unix.TUN_F_CSUM | unix.TUN_F_TSO4 | unix.TUN_F_TSO6
 	tunUDPOffloads = unix.TUN_F_USO4 | unix.TUN_F_USO6
 	tunIFFlags = unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE
-	tunIFMultiqueue = unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE
+	tunIFFMQ = unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE
 )
 
 
@@ -542,15 +542,15 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			// tunUDPOffloads were added in Linux v6.2. We do not return an
 			// error if they are unsupported at runtime.
 			tun.udpGSO = unix.IoctlSetInt(int(fd), unix.TUNSETOFFLOAD, tunTCPOffloads|tunUDPOffloads) == nil
-		
-			err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, tunIFMultiqueue)
-			if err != nil {
-				fmt.Printf("ioctl(TUNSETQUEUE, TUN_ATTACH_QUEUE | TUN_NAPI)\n")
-				return
-			}
 
 		} else {
 			tun.batchSize = 1
+		}
+
+		err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, tunIFFMQ)
+		if err != nil {
+			fmt.Printf("ioctl(TUNSETQUEUE, IFF_ATTACH_QUEUE | IFF_NAPI)\n")
+			return
 		}
 	}); e != nil {
 		return e
