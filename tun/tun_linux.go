@@ -543,7 +543,7 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			// error if they are unsupported at runtime.
 			tun.udpGSO = unix.IoctlSetInt(int(fd), unix.TUNSETOFFLOAD, tunTCPOffloads|tunUDPOffloads) == nil
 		
-			err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, unix.TUN_ATTACH_QUEUE | unix.TUN_NAPI)
+			err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, tunIFMultiqueue)
 			if err != nil {
 				fmt.Printf("ioctl(TUNSETQUEUE, TUN_ATTACH_QUEUE | TUN_NAPI)\n")
 				return
