@@ -579,9 +579,9 @@ func CreateTUN(name string, mtu int) (Device, error) {
 	}
 
 	ifr.SetUint16(tunIFFlags | tunIFMultiqueue)
-	err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr)
+	err = unix.IoctlSetInt(nfd, unix.TUNSETQUEUE, tunIFMultiqueue)
 	if err != nil {
-		fmt.Printf("The problem is Here... (NumCPU=%d)\n", runtime.NumCPU())
+		fmt.Printf("unix.IoctlSetInt(TUNSETQUEUE, tunIFMultiqueue) (NumCPU=%d)\n", runtime.NumCPU())
 		return nil, err
 	}
 
