@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+	"runtime"
 
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/conn"
@@ -508,6 +509,7 @@ const (
 	tunUDPOffloads = unix.TUN_F_USO4 | unix.TUN_F_USO6
 )
 
+
 func (tun *NativeTun) initFromFlags(name string) error {
 	sc, err := tun.tunFile.SyscallConn()
 	if err != nil {
@@ -538,6 +540,8 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			// tunUDPOffloads were added in Linux v6.2. We do not return an
 			// error if they are unsupported at runtime.
 			tun.udpGSO = unix.IoctlSetInt(int(fd), unix.TUNSETOFFLOAD, tunTCPOffloads|tunUDPOffloads) == nil
+		
+			
 		} else {
 			tun.batchSize = 1
 		}
@@ -546,6 +550,7 @@ func (tun *NativeTun) initFromFlags(name string) error {
 	}
 	return err
 }
+
 
 // CreateTUN creates a Device with the provided name and MTU.
 func CreateTUN(name string, mtu int) (Device, error) {
@@ -561,12 +566,25 @@ func CreateTUN(name string, mtu int) (Device, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	ifr_attach_queue, err := unix.NewIfreq(name)
+	if err != nil {
+		return nil, err
+	}
 	// IFF_VNET_HDR enables the "tun status hack" via routineHackListener()
 	// where a null write will return EINVAL indicating the TUN is up.
 	ifr.SetUint16(unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE | unix.IFF_NAPI | unix.IFF_NAPI_FRAGS)
 	err = unix.IoctlIfreq(nfd, unix.TUNSETIFF, ifr)
 	if err != nil {
 		return nil, err
+	}
+
+	ifr_attach_queue.SetUint16(unix.IFF_ATTACH_QUEUE | unix.IFF_NAPI | unix.IFF_NAPI_FRAGS | unix.IFF_MULTI_QUEUE)
+	for counter := 0; counter < runtime.NumCPU(); counter++ {
+		err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr_attach_queue)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = unix.SetNonblock(nfd, true)
