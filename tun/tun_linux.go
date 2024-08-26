@@ -584,6 +584,18 @@ func CreateTUN(name string, mtu int) (Device, error) {
 		return nil, err
 	}
 
+	err = unix.IoctlIfreq(nfd, unix.TUNSETIFF, ifr)
+	if err != nil {
+		fmt.Printf("There's a problem here... (NumCPU=%d)\n", runtime.NumCPU())
+		return nil, err
+	}
+
+	err = unix.IoctlIfreq(nfd, unix.TUNSETIFF, ifr)
+	if err != nil {
+		fmt.Printf("There's a problem here... (NumCPU=%d)\n", runtime.NumCPU())
+		return nil, err
+	}
+
 	err = unix.SetNonblock(nfd, true)
 	if err != nil {
 		unix.Close(nfd)
