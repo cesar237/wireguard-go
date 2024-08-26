@@ -547,7 +547,8 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			tun.batchSize = 1
 		}
 
-		err = unix.IoctlSetInt(int(fd), unix.TUNSETQUEUE, tunIFFMQ)
+		ifr.SetUint16(got | tunIFFMQ)
+		err = unix.IoctlIfreq(int(fd), unix.TUNSETQUEUE, ifr)
 		if err != nil {
 			fmt.Printf("ioctl(TUNSETQUEUE, IFF_ATTACH_QUEUE | IFF_NAPI)\n")
 			return
