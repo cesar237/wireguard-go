@@ -547,12 +547,12 @@ func (tun *NativeTun) initFromFlags(name string) error {
 			tun.batchSize = 1
 		}
 
-		ifr.SetUint16(got | tunIFFMQ)
-		err = unix.IoctlIfreq(int(fd), unix.TUNSETQUEUE, ifr)
-		if err != nil {
-			fmt.Printf("ioctl(TUNSETQUEUE, IFF_ATTACH_QUEUE | IFF_NAPI)\n")
-			return
-		}
+		// ifr.SetUint16(got | tunIFFMQ)
+		// err = unix.IoctlIfreq(int(fd), unix.TUNSETQUEUE, ifr)
+		// if err != nil {
+		// 	fmt.Printf("ioctl(TUNSETQUEUE, IFF_ATTACH_QUEUE | IFF_NAPI)\n")
+		// 	return
+		// }
 	}); e != nil {
 		return e
 	}
