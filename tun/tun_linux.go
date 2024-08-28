@@ -508,7 +508,7 @@ const (
 	tunTCPOffloads = unix.TUN_F_CSUM | unix.TUN_F_TSO4 | unix.TUN_F_TSO6
 	tunUDPOffloads = unix.TUN_F_USO4 | unix.TUN_F_USO6
 	tunIFFlags = unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE | unix.IFF_ATTACH_QUEUE
-	tunIFFMQ = unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE
+	tunIFFMQ = unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE | unix.IFF_MULTI_QUEUE
 )
 
 
@@ -580,16 +580,16 @@ func CreateTUN(name string, mtu int) (Device, error) {
 	ifr.SetUint16(tunIFFlags)
 	err = unix.IoctlIfreq(nfd, unix.TUNSETIFF, ifr)
 	if err != nil {
-		fmt.Printf("There's a problem here... (NumCPU=%d)\n", runtime.NumCPU())
+		fmt.Printf("ioctl(TUNSETIFF) (NumCPU=%d)\n", runtime.NumCPU())
 		return nil, err
 	}
 
-	err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr)
-	if err != nil {
-		fmt.Printf("There's a problem here... (NumCPU=%d)\n", runtime.NumCPU())
-		return nil, err
-	}
-	
+	// err = unix.IoctlIfreq(nfd, unix.TUNSETQUEUE, ifr)
+	// if err != nil {
+	// 	fmt.Printf("ioctl(TUNSETQUEUE) (NumCPU=%d)\n", runtime.NumCPU())
+	// 	return nil, err
+	// }
+
 
 	err = unix.SetNonblock(nfd, true)
 	if err != nil {
