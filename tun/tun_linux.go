@@ -12,11 +12,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"sync"
 	"syscall"
 	"time"
 	"unsafe"
-	"runtime"
 
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/conn"
@@ -507,8 +507,8 @@ const (
 	// TODO: support TSO with ECN bits
 	tunTCPOffloads = unix.TUN_F_CSUM | unix.TUN_F_TSO4 | unix.TUN_F_TSO6
 	tunUDPOffloads = unix.TUN_F_USO4 | unix.TUN_F_USO6
-	tunIFFlags = unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR | unix.IFF_MULTI_QUEUE | unix.IFF_ATTACH_QUEUE
-	tunIFFMQ = unix.IFF_NAPI | unix.IFF_ATTACH_QUEUE | unix.IFF_MULTI_QUEUE
+	tunIFFlags = unix.IFF_TUN | unix.IFF_NO_PI | unix.IFF_VNET_HDR
+	tunIFFMQ = unix.IFF_NAPI | unix.IFF_MULTI_QUEUE | unix.IFF_NAPI_FRAGS
 )
 
 
@@ -577,7 +577,7 @@ func CreateTUN(name string, mtu int) (Device, error) {
 
 	// IFF_VNET_HDR enables the "tun status hack" via routineHackListener()
 	// where a null write will return EINVAL indicating the TUN is up.
-	ifr.SetUint16(tunIFFlags)
+	ifr.SetUint16(tunIFFlags | tunIFFMQ)
 	err = unix.IoctlIfreq(nfd, unix.TUNSETIFF, ifr)
 	if err != nil {
 		fmt.Printf("ioctl(TUNSETIFF) (NumCPU=%d)\n", runtime.NumCPU())
